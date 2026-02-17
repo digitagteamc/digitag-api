@@ -15,7 +15,9 @@ export class CreatorsService {
                     instagram: dto.instagram.trim(),
                     category: dto.category.trim(),
                     phoneNumber: dto.phoneNumber.replace(/\s+/g, ""),
-
+                    user: {
+                        connect: { phoneNumber: dto.phoneNumber },
+                    },
                 },
             });
         } catch (e: any) {
@@ -32,7 +34,17 @@ export class CreatorsService {
             take: 200,
         });
     }
+ async myStatus(user: { id: string; role: "CREATOR" | "BRAND" }) {
+    const creator = await this.prisma.creator.findUnique({
+      where: { userId: user.id },
+      select: { status: true },
+    });
 
+    return {
+      role: user.role,
+      creatorStatus: creator?.status ?? "NOT_APPLIED",
+    };
+  }
     async approve(id: string) {
         return this.prisma.creator.update({
             where: { id },

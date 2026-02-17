@@ -6,25 +6,63 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
 enum CreatorStatus {
   PENDING
   APPROVED
   REJECTED
 }
+
+enum ProfileStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+enum BrandStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model BrandProfile {
+  id          String      @id @default(uuid())
+  userId      String      @unique
+  phoneNumber String      @unique
+
+  brandName   String
+  pan         String
+  gstin       String?
+  city        String?
+  state       String?
+
+  status      BrandStatus @default(PENDING)
+  createdAt   DateTime    @default(now())
+
+  user        AppUser     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@index([createdAt])
+}
+
+
 enum UserRole {
   ADMIN
 }
+
 enum AppUserRole {
   CREATOR
   BRAND
 }
 
 model AppUser {
-  id          String      @id @default(uuid())
+  id          String      @id @default(cuid())
   phoneNumber String      @unique
-  role        AppUserRole
+  role        AppUserRole // ✅ correct
   isActive    Boolean     @default(true)
   createdAt   DateTime    @default(now())
+
+  brandProfile   BrandProfile?
+  creatorProfile Creator?
 }
 
 model OtpSession {
@@ -45,17 +83,19 @@ model AdminUser {
   role         UserRole @default(ADMIN)
   createdAt    DateTime @default(now())
 }
-
-
 model Creator {
-  id        String       @id @default(uuid())
-  name      String
-  email     String       @unique
-  phoneNumber String     @unique   // ✅ ADD THIS
-  instagram String
-  category  String
-  status    CreatorStatus @default(PENDING)
-  createdAt DateTime     @default(now())
+  id          String        @id @default(uuid())
+  userId      String        @unique
+  phoneNumber String        @unique
+
+  name        String
+  email       String        @unique
+  instagram   String
+  category    String
+  status      CreatorStatus @default(PENDING)
+  createdAt   DateTime      @default(now())
+
+  user        AppUser       @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([createdAt])
   @@index([status])
