@@ -3,18 +3,24 @@ import { PrismaService } from "../../prisma/prisma.service";
 
 @Injectable()
 export class BrandsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   private normalizePhone(phone: string) {
     const p = String(phone || "").replace(/\s+/g, "");
     if (!/^\+?\d{10,15}$/.test(p)) throw new BadRequestException("Invalid phoneNumber");
     return p.startsWith("+") ? p : `+91${p}`;
   }
-async myStatus(user: { id: string; role: "CREATOR" | "BRAND" }) {
-  const brand = await this.prisma.brandProfile.findUnique({
-    where: { userId: user.id },
-    select: { status: true },
-  });}
+  async myStatus(user: { id: string; role: "CREATOR" | "BRAND" }) {
+    const brand = await this.prisma.brandProfile.findUnique({
+      where: { userId: user.id },
+      select: { status: true },
+    });
+    return {
+      role: user.role,
+      brandStatus: brand?.status ?? "NOT_REGISTERED",
+    };
+  }
+
   async registerBrand(body: {
     phoneNumber: string;
     brandName: string;

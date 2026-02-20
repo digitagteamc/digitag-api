@@ -13,12 +13,12 @@ async function bootstrap() {
   app.use(cookieParser());
 
   app.enableCors({
-    origin: ["http://localhost:3002", "http://localhost:3000"],
+    origin: true, // ✅ allow all origins
     credentials: true, // ✅ allow cookies
   });
 
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
-  await app.listen(process.env.PORT || 3001);
+  await app.listen(process.env.PORT || 3001, "0.0.0.0");
 }
 bootstrap();

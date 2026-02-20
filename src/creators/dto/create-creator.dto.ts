@@ -1,9 +1,10 @@
-import { IsEmail, IsNotEmpty, IsString, Matches, MaxLength } from "class-validator";
+import { IsEmail, IsInt, IsNotEmpty, IsObject, IsOptional, IsString, Matches, MaxLength, Min } from "class-validator";
+import { Transform } from "class-transformer";
 
 export class CreateCreatorDto {
     @IsString()
     @IsNotEmpty()
-    @MaxLength(80)
+    @MaxLength(100)
     name: string;
 
     @IsEmail()
@@ -11,6 +12,7 @@ export class CreateCreatorDto {
     @MaxLength(120)
     email: string;
 
+    @Transform(({ value }) => typeof value === 'string' ? value.replace(/\s+/g, "") : value)
     @IsString()
     @IsNotEmpty()
     @MaxLength(15)
@@ -19,13 +21,63 @@ export class CreateCreatorDto {
 
     @IsString()
     @IsNotEmpty()
-    @MaxLength(80)
-    instagram: string;
+    location: string;
+
     @IsString()
     @IsNotEmpty()
-    userId: string; // Add this field
+    creatorName: string;
+
     @IsString()
     @IsNotEmpty()
-    @MaxLength(50)
-    category: string;
+    industry: string;
+
+    @IsString()
+    @IsNotEmpty()
+    adsPreference: string;
+
+    @IsString()
+    @IsNotEmpty()
+    primaryPlatform: string;
+
+    @IsObject()
+    @IsNotEmpty()
+    socialLinks: Record<string, string>;
+
+    @IsInt()
+    @Min(0)
+    followerCount: number;
+
+    @IsString()
+    @IsOptional()
+    profilePicture?: string;
+
+    @IsString()
+    @IsOptional()
+    bio?: string;
+
+    @IsString()
+    @IsOptional()
+    collaborationInterests?: string;
+
+    // Geo fields for unique key
+    @IsString()
+    @IsNotEmpty()
+    state: string;
+
+    @IsString()
+    @IsNotEmpty()
+    district: string;
+
+    @IsString()
+    @IsNotEmpty()
+    language: string;
+
+    // Optional legacy fields (nullable in DB)
+    @IsString()
+    @IsOptional()
+    instagram?: string;
+
+    @IsString()
+    @IsOptional()
+    category?: string;
 }

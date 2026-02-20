@@ -24,6 +24,12 @@ enum BrandStatus {
   REJECTED
 }
 
+enum CollabStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 model BrandProfile {
   id          String      @id @default(uuid())
   userId      String      @unique
@@ -38,7 +44,8 @@ model BrandProfile {
   status      BrandStatus @default(PENDING)
   createdAt   DateTime    @default(now())
 
-  user        AppUser     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user            AppUser          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  collabRequests  CollabRequest[]
 
   @@index([status])
   @@index([createdAt])
@@ -88,16 +95,55 @@ model Creator {
   userId      String        @unique
   phoneNumber String        @unique
 
-  name        String
-  email       String        @unique
-  instagram   String
-  category    String
+  name                  String
+  email                 String        @unique
+  location              String?
+  creatorName           String?
+  industry              String?
+  adsPreference         String?
+  primaryPlatform       String?
+  socialLinks           Json? // Store multiple platform links
+  followerCount         Int?
+  profilePicture        String?
+  bio                   String?
+  collaborationInterests String?
+  
+  // Fields for unique key generation
+  state                 String?
+  district              String?
+  language              String?
+  uniqueKey             String?        @unique
+
+  instagram             String? // Keep for backward compatibility or remove if covered by socialLinks
+  category              String? // Keep for backward compatibility or remove if covered by industry
+
   status      CreatorStatus @default(PENDING)
   createdAt   DateTime      @default(now())
 
-  user        AppUser       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user            AppUser          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  collabRequests  CollabRequest[]
 
   @@index([createdAt])
   @@index([status])
+  @@index([uniqueKey])
+}
+
+model CollabRequest {
+  id          String      @id @default(uuid())
+  brandId     String
+  creatorId   String
+  requirement String
+  budget      String?
+  timeline    String?
+  message     String?
+  status      CollabStatus @default(PENDING)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  brand       BrandProfile @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  creator     Creator      @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+
+  @@index([creatorId])
+  @@index([brandId])
 }
 
