@@ -8,21 +8,28 @@ export class CreatorsService {
 
     async create(dto: CreateCreatorDto) {
         try {
+            const cleanPhone = dto.phoneNumber.replace(/\s+/g, "");
+
             return await this.prisma.creator.create({
                 data: {
                     name: dto.name.trim(),
                     email: dto.email.trim().toLowerCase(),
                     instagram: dto.instagram.trim(),
                     category: dto.category.trim(),
-                    phoneNumber: dto.phoneNumber.replace(/\s+/g, ""),
+                    phoneNumber: cleanPhone,
                     user: {
-                        connect: { phoneNumber: dto.phoneNumber },
+                        // Connect via ID is much safer than phone number
+                        connect: { id: dto.userId },
                     },
                 },
             });
         } catch (e: any) {
+            // Prisma error code for "Record to connect not found"
+            if (e.code === 'P2025') {
+                throw new ConflictException("The AppUser account was not found.");
+            }
             if (String(e?.message || "").includes("Unique constraint")) {
-                throw new ConflictException("Email already exists");
+                throw new ConflictException("Email or Phone Number already exists");
             }
             throw e;
         }
@@ -34,17 +41,17 @@ export class CreatorsService {
             take: 200,
         });
     }
- async myStatus(user: { id: string; role: "CREATOR" | "BRAND" }) {
-    const creator = await this.prisma.creator.findUnique({
-      where: { userId: user.id },
-      select: { status: true },
-    });
+    async myStatus(user: { id: string; role: "CREATOR" | "BRAND" }) {
+        const creator = await this.prisma.creator.findUnique({
+            where: { userId: user.id },
+            select: { status: true },
+        });
 
-    return {
-      role: user.role,
-      creatorStatus: creator?.status ?? "NOT_APPLIED",
-    };
-  }
+        return {
+            role: user.role,
+            creatorStatus: creator?.status ?? "NOT_APPLIED",
+        };
+    }
     async approve(id: string) {
         return this.prisma.creator.update({
             where: { id },

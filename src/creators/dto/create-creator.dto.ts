@@ -21,7 +21,9 @@ export class CreateCreatorDto {
     @IsNotEmpty()
     @MaxLength(80)
     instagram: string;
-
+    @IsString()
+    @IsNotEmpty()
+    userId: string; // Add this field
     @IsString()
     @IsNotEmpty()
     @MaxLength(50)
